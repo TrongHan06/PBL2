@@ -1,0 +1,27 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build RAYLIB App",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "main.cpp",
+                "TaiKhoan.h",
+                "-o",
+                "main.exe",
+                "-I.",
+                "-L./raylib-5.5_win64_mingw-w64/lib",
+                "-lraylib",
+                "-lopengl32",
+                "-lgdi32",
+                "-lwinmm",
+                 "-Wno-enum-compare"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
