@@ -2,12 +2,18 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build RAYLIB App",
+            "label": "Build Raylib ATM App",
             "type": "shell",
-            "command": "g++",
+            "command": "C:/msys64/ucrt64/bin/g++.exe",
             "args": [
                 "main.cpp",
                 "TaiKhoan.h",
+                "admin.h",
+                "chuTro.h",
+                "dkchutro.h",
+                "PhongTro.h",
+                "QuanLy.h",
+                "hinhAnh.h",
                 "-o",
                 "main.exe",
                 "-I.",
@@ -16,12 +22,22 @@
                 "-lopengl32",
                 "-lgdi32",
                 "-lwinmm",
-                 "-Wno-enum-compare"
+                "-std=c++17",
+                "-O2",
+                "-Wall",
+                "-Wno-enum-compare"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "detail": "Build Raylib ATM project with g++"
         }
     ]
 }
