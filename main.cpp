@@ -42,7 +42,8 @@ typedef enum{
     SCREEN_THUETRO,
     SCREEN_DANGKI,
     SCREEN_AD_DUYET,
-    SCREEN_TIMKIEM
+    SCREEN_TIMKIEM,
+    SCREEN_CHITIET
 }ScreenState;
 ScreenState DrawScreenLogin(){
     ClearBackground(RAYWHITE);
@@ -362,6 +363,139 @@ ScreenState DrawScreenTimKiem(){
      }
     return SCREEN_TIMKIEM;
 }
+ScreenState DrawScreenDanhSach(QuanLy<DangKi>& dsDangKi)
+{
+
+    static bool firstLoad = true;
+    if (firstLoad) {
+        dsDangKi.docFile("dangky.txt");
+        firstLoad = false;
+    }
+
+    ClearBackground(RAYWHITE);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+
+    float fontSize = 30;
+    const char* title = "DANH SACH CHO DUYET";
+    int textWidth = MeasureText(title, fontSize);
+    int textX = (1000 - textWidth) / 2;
+    DrawText(title, textX, 40, fontSize, DARKBLUE);
+
+    int y = 120;
+    bool hasPending = false;
+    for (int i = 0; i < dsDangKi.size(); i++)
+    {
+        DangKi& dk = dsDangKi.lay(i);
+
+        if (dk.getStatus() == CHO_DUYET)
+        {
+            const ChuTro& ct = dk.getChuTro();
+
+            if (GuiButton({300, (float)y, 400, 50}, ct.getTen().c_str()))
+            {
+                dsDangKi.setSelected(i);
+                return SCREEN_CHITIET;
+            }
+
+            y += 70;
+            hasPending = true;
+        }
+    }
+
+    if (!hasPending)
+    {
+        DrawText("Khong co chu tro nao cho duyet", 300, 200, 20, RED);
+    }
+
+    if (GuiButton({400, 700, 200, 30}, "Quay Lai"))
+        return SCREEN_CHUTRO;
+
+    return SCREEN_AD_DUYET;
+}
+
+
+ScreenState DrawScreenChiTiet(QuanLy<DangKi>& dsDangKi, HinhAnh& anh) {
+    int index = dsDangKi.getSelected();
+    if (index < 0 || index >= dsDangKi.size()) return SCREEN_AD_DUYET;
+
+    DangKi& dk = dsDangKi.lay(index);
+    const ChuTro& ct = dk.getChuTro();
+
+    ClearBackground(RAYWHITE);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+
+    float fontSize = 30;
+    const char* title = "THONG TIN DANG KI";
+    int textWidth = MeasureText(title, fontSize);
+    int textX = (1000 - textWidth) / 2;
+    DrawText(title, textX, 40, fontSize, DARKBLUE);
+
+    GuiLabel({200, 100, 400, 30}, ("Ten: " + ct.getTen()).c_str());
+    GuiLabel({200, 150, 400, 30}, ("SDT: " + ct.getSdt()).c_str());
+    GuiLabel({200, 200, 400, 30}, ("Dia Chi: " + ct.getDiaChi()).c_str());
+    GuiLabel({200, 250, 400, 30}, ("Mo Ta: " + ct.getMoTa()).c_str());
+    if (!ct.getHinhAnh().empty() && anh.has(ct.getHinhAnh())) {
+        Texture2D tex = anh.get(ct.getHinhAnh());
+        DrawTextureEx(tex, {600, 120}, 0, 0.35f, WHITE);
+        GuiLabel({600, 90, 200, 25}, "Anh");
+    }
+    if (GuiButton({250, 600, 150, 50}, "DUYET")) {
+
+        dk.setStatus(TrangThai::DA_DUYET);
+
+        QuanLy<DangKi> dsDaDuyet;
+        dsDaDuyet.docFile("quanlyct.txt");
+        dsDaDuyet.them(dk);
+        dsDaDuyet.luuFile("quanlyct.txt");
+        dsDangKi.erase(index);
+        dsDangKi.luuFile("dangky.txt");
+
+        dsDangKi.clearSelected();
+        return SCREEN_AD_DUYET;
+    }
+    if (GuiButton({600, 600, 150, 50}, "TU CHOI")) {
+        dsDangKi.erase(index);
+        dsDangKi.luuFile("dangky.txt");
+        dsDangKi.clearSelected();
+        return SCREEN_AD_DUYET;
+    }
+    if (GuiButton({400, 700, 200, 30}, "Quay Lai")) {
+        dsDangKi.clearSelected();
+        return SCREEN_AD_DUYET;
+    }
+
+    return SCREEN_CHITIET;
+}
+
+ScreenState DrawScreenChuTro()
+{
+    ClearBackground(RAYWHITE);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+
+    float fontSize = 30;
+    const char* title = "QUAN LY CHU TRO";
+    int textWidth = MeasureText(title, fontSize);
+    int textX = (1000 - textWidth) / 2;
+    DrawText(title, textX, 40, fontSize, DARKBLUE);
+
+    // Nút quản lý phòng trọ
+    if (GuiButton({350, 200, 300, 50}, "Quan Ly Phong Tro"))
+    {
+        return SCREEN_CHUTRO; 
+    }
+
+    // ⭐ NÚT DANH SÁCH CHỜ DUYỆT (đúng yêu cầu của bạn)
+    if (GuiButton({350, 300, 300, 50}, "Danh Sach Cho Duyet"))
+    {
+        return SCREEN_AD_DUYET;
+    }
+
+    if (GuiButton({350, 500, 300, 50}, "Back"))
+    {
+        return SCREEN_ADMIN;
+    }
+    return SCREEN_CHUTRO;
+}
 
 
 int main(){
@@ -385,50 +519,78 @@ int main(){
         BeginDrawing();
         ClearBackground(RAYWHITE);
         switch (currentScreen)
-        {
-        case SCREEN_LOGIN:
-          currentScreen = DrawScreenLogin();
-                   break;
-        case SCREEN_ADMIN_LOGIN:
-            nextScreen = DrawScreenADLogin(adminName,adminPass);
-            if(nextScreen != SCREEN_ADMIN_LOGIN)
-            currentScreen = nextScreen;
-            if(currentScreen == SCREEN_ADMIN)
-            SetWindowSize(1000,800);
-            break;
-        case SCREEN_USER_LOGIN:
-            nextScreen = DrawScreenUserLogin(userName,userPass);
-            if(nextScreen != SCREEN_USER_LOGIN)
-            currentScreen = nextScreen;
-            if(currentScreen == SCREEN_USER)
-            SetWindowSize(1000,800);
-            break;
-        case SCREEN_ADMIN:
-            nextScreen = DrawScreenAd();
-            if(nextScreen != SCREEN_ADMIN)
-                currentScreen = nextScreen;
-            if(currentScreen == SCREEN_LOGIN) SetWindowSize(600,400);
-            
-            break;
-        case SCREEN_USER:
-            nextScreen = DrawScreenUser();
-            if(nextScreen != SCREEN_USER)
-                currentScreen = nextScreen;
-            if(currentScreen == SCREEN_LOGIN) SetWindowSize(600,400);
-            break;
-        case SCREEN_DANGKI:
-        nextScreen = DrawSCreenDK(dsDangKi,hinhAnhManager);
-        if(nextScreen != SCREEN_DANGKI)
-        currentScreen = nextScreen;
-        break;
-        case SCREEN_TIMKIEM:
-        nextScreen = DrawScreenTimKiem();
-        if(nextScreen != SCREEN_TIMKIEM)
-        currentScreen = nextScreen;
-        break;
-        }
+{
+case SCREEN_LOGIN:
+    currentScreen = DrawScreenLogin();
+    break;
 
-        
+case SCREEN_ADMIN_LOGIN:
+    nextScreen = DrawScreenADLogin(adminName, adminPass);
+    if (nextScreen != SCREEN_ADMIN_LOGIN)
+        currentScreen = nextScreen;
+
+    if (currentScreen == SCREEN_ADMIN)
+        SetWindowSize(1000, 800);
+    break;
+
+case SCREEN_USER_LOGIN:
+    nextScreen = DrawScreenUserLogin(userName, userPass);
+    if (nextScreen != SCREEN_USER_LOGIN)
+        currentScreen = nextScreen;
+
+    if (currentScreen == SCREEN_USER)
+        SetWindowSize(1000, 800);
+    break;
+
+case SCREEN_ADMIN:
+    nextScreen = DrawScreenAd();
+    if (nextScreen != SCREEN_ADMIN)
+        currentScreen = nextScreen;
+
+    if (currentScreen == SCREEN_LOGIN)
+        SetWindowSize(600, 400);
+    break;
+
+case SCREEN_USER:
+    nextScreen = DrawScreenUser();
+    if (nextScreen != SCREEN_USER)
+        currentScreen = nextScreen;
+
+    if (currentScreen == SCREEN_LOGIN)
+        SetWindowSize(600, 400);
+    break;
+
+case SCREEN_DANGKI:
+    nextScreen = DrawSCreenDK(dsDangKi, hinhAnhManager);
+    if (nextScreen != SCREEN_DANGKI)
+        currentScreen = nextScreen;
+    break;
+
+case SCREEN_TIMKIEM:
+    nextScreen = DrawScreenTimKiem();
+    if (nextScreen != SCREEN_TIMKIEM)
+        currentScreen = nextScreen;
+    break;
+
+case SCREEN_CHITIET:
+    nextScreen = DrawScreenChiTiet(dsDangKi, hinhAnhManager);
+    if (nextScreen != SCREEN_CHITIET)
+        currentScreen = nextScreen;
+    break;
+
+case SCREEN_CHUTRO:
+    nextScreen = DrawScreenChuTro();
+    if (nextScreen != SCREEN_CHUTRO)
+        currentScreen = nextScreen;
+    break;
+
+case SCREEN_AD_DUYET:
+    nextScreen = DrawScreenDanhSach(dsDangKi);
+    if (nextScreen != SCREEN_AD_DUYET)
+        currentScreen = nextScreen;
+    break;
+}
+
         EndDrawing();
     }
     CloseWindow();

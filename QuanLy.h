@@ -12,6 +12,7 @@ template <typename T>
 class QuanLy {
 private:
     std::vector<T> ds;
+    int SelectedIndex =-1;
 
 public:
     QuanLy(){}
@@ -31,6 +32,10 @@ public:
     int size() const {
         return ds.size();
     }
+    void erase(int index) {
+    if (index >= 0 && index < ds.size())
+        ds.erase(ds.begin() + index);
+}
 
     const std::vector<T>& getAll() const {
         return ds;
@@ -75,6 +80,9 @@ public:
     fin.close();
    }
 
+   void setSelected(int i){SelectedIndex = i;}
+   int getSelected() { return SelectedIndex;}
+   void clearSelected() {SelectedIndex = -1;}
 };
 
 #endif
