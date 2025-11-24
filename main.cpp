@@ -43,7 +43,9 @@ typedef enum{
     SCREEN_DANGKI,
     SCREEN_AD_DUYET,
     SCREEN_TIMKIEM,
-    SCREEN_CHITIET
+    SCREEN_CHITIET,
+    SCREEN_AD_DADUYET,
+    SCREEN_CHITIET_DADUYET
 }ScreenState;
 ScreenState DrawScreenLogin(){
     ClearBackground(RAYWHITE);
@@ -443,6 +445,12 @@ ScreenState DrawScreenChiTiet(QuanLy<DangKi>& dsDangKi, HinhAnh& anh) {
 
         dk.setStatus(TrangThai::DA_DUYET);
 
+        if (!ct.getHinhAnh().empty()) {
+        std::string src = "hinhanh/" + ct.getHinhAnh();
+        std::string dest = "hinhanhdatai/" + ct.getHinhAnh();
+        std::filesystem::copy_file(src, dest, std::filesystem::copy_options::overwrite_existing);
+    }
+
         QuanLy<DangKi> dsDaDuyet;
         dsDaDuyet.docFile("quanlyct.txt");
         dsDaDuyet.them(dk);
@@ -478,24 +486,102 @@ ScreenState DrawScreenChuTro()
     int textX = (1000 - textWidth) / 2;
     DrawText(title, textX, 40, fontSize, DARKBLUE);
 
-    // Nút quản lý phòng trọ
-    if (GuiButton({350, 200, 300, 50}, "Quan Ly Phong Tro"))
+    if (GuiButton({350, 200, 300, 50}, "DANH SACH CHU TRO"))
     {
-        return SCREEN_CHUTRO; 
+        return SCREEN_AD_DADUYET; 
     }
 
-    // ⭐ NÚT DANH SÁCH CHỜ DUYỆT (đúng yêu cầu của bạn)
-    if (GuiButton({350, 300, 300, 50}, "Danh Sach Cho Duyet"))
+    if (GuiButton({350, 300, 300, 50}, "DANH SACH CHO DUYET"))
     {
         return SCREEN_AD_DUYET;
     }
 
-    if (GuiButton({350, 500, 300, 50}, "Back"))
+    if (GuiButton({350, 500, 300, 50}, "QUAY LAI"))
     {
         return SCREEN_ADMIN;
     }
     return SCREEN_CHUTRO;
 }
+ScreenState DrawScreenDsDaDuyet(QuanLy<DangKi>& dsDaDuyet)
+{
+
+    static bool firstLoad = true;
+    if (firstLoad) {
+        dsDaDuyet.docFile("quanlyct.txt");
+        firstLoad = false;
+    }
+
+    ClearBackground(RAYWHITE);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+
+    float fontSize = 30;
+    const char* title = "DANH SACH CHU TRO";
+    int textWidth = MeasureText(title, fontSize);
+    int textX = (1000 - textWidth) / 2;
+    DrawText(title, textX, 40, fontSize, DARKBLUE);
+
+    int y = 120;
+    bool hasPending = false;
+    for (int i = 0; i < dsDaDuyet.size(); i++)
+    {
+        DangKi& dk = dsDaDuyet.lay(i);
+        const ChuTro& ct = dk.getChuTro();
+
+            if (GuiButton({300, (float)y, 400, 50}, ct.getTen().c_str()))
+            {
+                dsDaDuyet.setSelected(i);
+                return SCREEN_CHITIET_DADUYET;
+            }
+
+            y += 70;
+            hasPending = true;
+        
+    }
+
+    if (!hasPending)
+    {
+        DrawText("Khong co chu tro nao", 300, 200, 20, RED);
+    }
+
+    if (GuiButton({400, 700, 200, 30}, "Quay Lai"))
+        return SCREEN_CHUTRO;
+
+    return SCREEN_AD_DADUYET;
+}
+ScreenState DrawScreenChiTietDaDuyet(QuanLy<DangKi>& dsDaDuyet, HinhAnh& anh) {
+    int index = dsDaDuyet.getSelected();
+    if (index < 0 || index >= dsDaDuyet.size()) return SCREEN_AD_DADUYET;
+
+    DangKi& dk = dsDaDuyet.lay(index);
+    const ChuTro& ct = dk.getChuTro();
+
+    ClearBackground(RAYWHITE);
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+
+    float fontSize = 30;
+    const char* title = "THONG TIN CHU TRO";
+    int textWidth = MeasureText(title, fontSize);
+    int textX = (1000 - textWidth) / 2;
+    DrawText(title, textX, 40, fontSize, DARKBLUE);
+
+    GuiLabel({200, 100, 400, 30}, ("Ten: " + ct.getTen()).c_str());
+    GuiLabel({200, 150, 400, 30}, ("SDT: " + ct.getSdt()).c_str());
+    GuiLabel({200, 200, 400, 30}, ("Dia Chi: " + ct.getDiaChi()).c_str());
+    GuiLabel({200, 250, 400, 30}, ("Mo Ta: " + ct.getMoTa()).c_str());
+
+    if (!ct.getHinhAnh().empty() && anh.has(ct.getHinhAnh())) {
+        Texture2D tex = anh.get(ct.getHinhAnh());
+        DrawTextureEx(tex, {600, 120}, 0, 0.35f, WHITE);
+        GuiLabel({600, 90, 200, 25}, "Anh");
+    }
+    if (GuiButton({400, 700, 200, 30}, "Quay Lai")) {
+        dsDaDuyet.clearSelected();
+        return SCREEN_AD_DADUYET;
+    }
+
+    return SCREEN_CHITIET_DADUYET;
+}
+
 
 
 int main(){
@@ -512,8 +598,11 @@ int main(){
     static char userName[64]  = "";
     static char userPass[64]  = "";
     QuanLy<DangKi> dsDangKi;
+    QuanLy<DangKi> dsDaDuyet;
     HinhAnh hinhAnhManager;
     hinhAnhManager.loadAnh("hinhanh"); 
+    HinhAnh hinhAnhDaDuyet;
+    hinhAnhDaDuyet.loadAnh("hinhanhdatai");
 
     while(!WindowShouldClose()){
         BeginDrawing();
@@ -589,6 +678,16 @@ case SCREEN_AD_DUYET:
     if (nextScreen != SCREEN_AD_DUYET)
         currentScreen = nextScreen;
     break;
+case SCREEN_AD_DADUYET:
+     nextScreen = DrawScreenDsDaDuyet(dsDaDuyet);
+     if(nextScreen != SCREEN_AD_DADUYET)
+     currentScreen = nextScreen;
+     break;
+case SCREEN_CHITIET_DADUYET:
+     nextScreen = DrawScreenChiTietDaDuyet(dsDaDuyet,hinhAnhDaDuyet);
+     if(nextScreen != SCREEN_CHITIET_DADUYET)
+     currentScreen = nextScreen;
+     break;
 }
 
         EndDrawing();
