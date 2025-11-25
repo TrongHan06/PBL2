@@ -45,7 +45,8 @@ public:
         if(!fsave) return;
         for(const DangKi& dk : ds){
             const ChuTro& ct = dk.getChuTro();
-            fsave << ct.getTen() << ','
+            fsave << ct.getSTK() << ','
+                 << ct.getTen() << ','
                  << ct.getSdt() << ','
                  << ct.getDiaChi() << ','
                  << ct.getMoTa() << ','
@@ -62,8 +63,9 @@ public:
     while(std::getline(fin,line)){
         if(line.empty()) continue;
         std::stringstream ss(line);
-        std::string ten,sdt,diaChi,moTa,hinhAnh,trangThai;
+        std::string soTK,ten,sdt,diaChi,moTa,hinhAnh,trangThai;
 
+        std::getline(ss, soTK, ',');
         std::getline(ss, ten, ',');
         std::getline(ss, sdt, ',');
         std::getline(ss, diaChi, ',');
@@ -71,7 +73,7 @@ public:
         std::getline(ss, hinhAnh, ',');
         std::getline(ss, trangThai);
 
-        ChuTro ct(ten,sdt,PhongTro(moTa,diaChi,hinhAnh));
+        ChuTro ct(ten,sdt,soTK,PhongTro(moTa,diaChi,hinhAnh));
         DangKi dk(ct);
         dk.setStatus(static_cast<TrangThai>(std::stoi(trangThai)));
 
