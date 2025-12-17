@@ -1152,6 +1152,7 @@ ScreenState DrawScreenChiTietNTAD(QuanLy<DangKiThue>& dsCTDaDuyet) {
         DrawRectangleLines(180, 120, 640, 340, Fade(DARKGRAY, 0.5f));
 
     if (GuiButton({400, 700, 200, 30}, "Quay Lai")) {
+        dsCTDaDuyet.clearSelected();
         return SCREEN_NTAD;
     }
 
@@ -2057,8 +2058,8 @@ ScreenState DrawScreenPhongTroCuaToi()
 }
 ScreenState DrawScreenChonPhong(QuanLy<DangKi>& dsDaDuyet){
     static int soLuongPhong = 0;
-    static bool phongDaThue[100] = {false};
-    static bool chonPhong = 0;
+    static bool phongDaThue[101] = {false};
+    static int chonPhong = 0;
     static bool daLoad = false;
     if(!daLoad){
         soLuongPhong = 0;
