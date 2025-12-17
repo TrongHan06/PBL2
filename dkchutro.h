@@ -11,6 +11,7 @@ class DangKi{
     ChuTro chutro;
     TrangThai status;
     public:
+    DangKi() = default; 
     DangKi(const ChuTro& ct)
     :chutro(ct),status(CHO_DUYET){}
     TrangThai getStatus() const {return status;}

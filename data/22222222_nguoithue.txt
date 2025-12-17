@@ -1,2 +1,0 @@
-FILE DU LIEU NGUOI THUE - SoTK: 22222222
-NguoiThue: false

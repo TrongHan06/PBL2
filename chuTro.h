@@ -10,12 +10,15 @@ class ChuTro{
     PhongTro phongTro;
     public:
     ChuTro() {} 
-    ChuTro(const std::string& t,const std::string& so,std::string& stk,const PhongTro& pt)
-    :ten(t),sdt(so),soTK(stk),phongTro(pt) {}
+    ChuTro(const std::string& stk,const std::string& t,const std::string& so,const PhongTro& pt)
+    :soTK(stk),ten(t),sdt(so),phongTro(pt) {}
     std::string getTen() const {return ten;}
     std::string getSdt() const {return sdt;}
-    std::string getMoTa() const {return phongTro.getMoTa();}
     std::string getDiaChi() const {return phongTro.getDiaChi();}
+    int getSoLuongPhong() const {return phongTro.getSoLuongPhong();}
+    std::string getTienPhong() const {return phongTro.getTienPhong();}
+    std::string  getTienDien() const {return phongTro.getTienDien();}
+    std::string getTienNuoc() const {return phongTro.getTienNuoc();}
     std::string getHinhAnh() const {return phongTro.getHinhAnh();}
     std::string getSTK() const {return soTK;}
 

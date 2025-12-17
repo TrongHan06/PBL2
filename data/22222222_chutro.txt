@@ -1,2 +1,0 @@
-FILE DU LIEU CHU TRO - SoTK: 22222222
-ChuTro: false
