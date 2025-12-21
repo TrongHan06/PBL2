@@ -239,6 +239,7 @@ ScreenState DrawScreenUserLogin(char* userName,char* userPass){
     Rectangle registerButton = {175,237,100,35};
 
     if(GuiButton(registerButton,"Dang Ky")){
+        static bool daKhoiTao = false;
         return SCREEN_DANGKI_USER;
     }
     
@@ -502,6 +503,7 @@ ScreenState DrawSCreenDK(QuanLy<DangKi>& dsDangKy, HinhAnh& hinhAnhManager,std::
             hinhAnh
         );
         ChuTro ct(currentUserSoTK,ten,sdt,pt);
+        dsDangKy.docFile("dangky.txt");
         DangKi dk(ct);
         dsDangKy.them(dk);
         dsDangKy.luuFile("dangky.txt");
@@ -820,6 +822,7 @@ ScreenState DrawScreenDangKyThue(QuanLy<DangKiThue>& dsDKiThue)
         );
         DangKiThue dkThue(nt); 
         dkThue.setStatusNT(CHO_DUYET_NT);
+        dsDKiThue.docFile("dangkithuephong.txt");
         dsDKiThue.them(dkThue);
         dsDKiThue.luuFile("dangkithuephong.txt");
 
@@ -920,67 +923,75 @@ ScreenState DrawScreenDanhSach(QuanLy<DangKi>& dsDangKi)
     return SCREEN_AD_DUYET;
 }
 
-ScreenState DrawScreenChiTiet(QuanLy<DangKi>& dsDangKi,  QuanLy<DangKi>& dsDaDuyet,HinhAnh& anh) {
-    int index = dsDangKi.getSelected();
-    if (index < 0 || index >= dsDangKi.size()) return SCREEN_AD_DUYET;
+    ScreenState DrawScreenChiTiet(QuanLy<DangKi>& dsDangKi,  QuanLy<DangKi>& dsDaDuyet,HinhAnh& anh) {
+        int index = dsDangKi.getSelected();
+        if (index < 0 || index >= dsDangKi.size()) return SCREEN_AD_DUYET;
 
-    DangKi& dk = dsDangKi.lay(index);
-    const ChuTro& ct = dk.getChuTro();
+        DangKi& dk = dsDangKi.lay(index);
+        const ChuTro& ct = dk.getChuTro();
 
-    ClearBackground(RAYWHITE);
-    GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
+        ClearBackground(RAYWHITE);
+        GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
 
-    float fontSize = 30;
-    const char* title = "THONG TIN DANG KI";
-    int textWidth = MeasureText(title, fontSize);
-    int textX = (1000 - textWidth) / 2;
-    DrawText(title, textX, 40, fontSize, DARKBLUE);
-    GuiLabel({200, 100, 400, 30}, ("Ten: " + ct.getTen()).c_str());
-    GuiLabel({200, 150, 400, 30}, ("SDT: " + ct.getSdt()).c_str());
-    GuiLabel({200, 200, 400, 30}, ("Dia Chi: " + ct.getDiaChi()).c_str());
-    GuiLabel({200, 250, 400, 30}, ("So Luong Phong:"+ std::to_string(ct.getSoLuongPhong())).c_str());
-    GuiLabel({200, 300, 400, 30}, ("Tien Phong: " + ct.getTienPhong() + " VND").c_str());
-    GuiLabel({200, 350, 400, 30}, ("Don Gia Dien: " + ct.getTienDien() + " VND").c_str());
-    GuiLabel({200, 400, 400, 30}, ("Don Gia Nuoc: " + ct.getTienNuoc() + " VND").c_str());
-    if (!ct.getHinhAnh().empty() && anh.has(ct.getHinhAnh())) {
-        Texture2D tex = anh.get(ct.getHinhAnh());
-        DrawTextureEx(tex, {600, 120}, 0, 0.35f, WHITE);
-        GuiLabel({600, 100, 200, 25}, "Anh");
-    }
-    if (GuiButton({250, 600, 150, 50}, "DUYET")) {
-        dk.setStatus(TrangThai::DA_DUYET);
-
-        if (!ct.getHinhAnh().empty()) {
-            std::string src = "hinhanh/" + ct.getHinhAnh();
-            std::string dest = "hinhanhdatai/" + ct.getHinhAnh();
-            std::filesystem::copy_file(src, dest, std::filesystem::copy_options::overwrite_existing);
+        float fontSize = 30;
+        const char* title = "THONG TIN DANG KI";
+        int textWidth = MeasureText(title, fontSize);
+        int textX = (1000 - textWidth) / 2;
+        DrawText(title, textX, 40, fontSize, DARKBLUE);
+        GuiLabel({200, 100, 400, 30}, ("Ten: " + ct.getTen()).c_str());
+        GuiLabel({200, 150, 400, 30}, ("SDT: " + ct.getSdt()).c_str());
+        GuiLabel({200, 200, 400, 30}, ("Dia Chi: " + ct.getDiaChi()).c_str());
+        GuiLabel({200, 250, 400, 30}, ("So Luong Phong:"+ std::to_string(ct.getSoLuongPhong())).c_str());
+        GuiLabel({200, 300, 400, 30}, ("Tien Phong: " + ct.getTienPhong() + " VND").c_str());
+        GuiLabel({200, 350, 400, 30}, ("Don Gia Dien: " + ct.getTienDien() + " VND").c_str());
+        GuiLabel({200, 400, 400, 30}, ("Don Gia Nuoc: " + ct.getTienNuoc() + " VND").c_str());
+        if (!ct.getHinhAnh().empty() && anh.has(ct.getHinhAnh())) {
+            Texture2D tex = anh.get(ct.getHinhAnh());
+            DrawTextureEx(tex, {600, 120}, 0, 0.35f, WHITE);
+            GuiLabel({600, 100, 200, 25}, "Anh");
         }
+        if (GuiButton({250, 600, 150, 50}, "DUYET")) {
+            dk.setStatus(TrangThai::DA_DUYET);
+
+            if (!ct.getHinhAnh().empty()) {
+                std::string src = "hinhanh/" + ct.getHinhAnh();
+                std::string dest = "hinhanhdatai/" + ct.getHinhAnh();
+                std::filesystem::copy_file(src, dest, std::filesystem::copy_options::overwrite_existing);
+            }
+
+        
+
+             
+            dsDaDuyet.them(dk);
+            dsDaDuyet.luuFile("quanlyct.txt");
 
         std::string userFile = "data/" + ct.getSTK() + "/chutro.txt";
-        dsDaDuyet.them(dk);
-        dsDaDuyet.luuFile("quanlyct.txt");
-        dsDaDuyet.docFile(userFile);
-        dsDaDuyet.them(dk);
-        dsDaDuyet.luuFile(userFile);
+            dsDaDuyet.docFile(userFile);
+            dsDaDuyet.them(dk);
+            dsDaDuyet.luuFile(userFile);
 
-        dsDangKi.erase(index);
-        dsDangKi.luuFile("dangky.txt");
-        dsDangKi.clearSelected();
-        return SCREEN_AD_DUYET;
-    }
-    if (GuiButton({600, 600, 150, 50}, "TU CHOI")) {
-        dsDangKi.erase(index);
-        dsDangKi.luuFile("dangky.txt");
-        dsDangKi.clearSelected();
-        return SCREEN_AD_DUYET;
-    }
-    if (GuiButton({400, 700, 200, 30}, "Quay Lai")) {
-        dsDangKi.clearSelected();
-        return SCREEN_AD_DUYET;
-    }
+            dsDangKi.docFile("dangky.txt");
+            if (index >= 0 && index < dsDangKi.size()) {
+            dsDangKi.erase(index);
+            dsDangKi.luuFile("dangky.txt");
+        }
 
-    return SCREEN_CHITIET;
-}
+            dsDangKi.clearSelected();
+            return SCREEN_AD_DUYET;
+        }
+        if (GuiButton({600, 600, 150, 50}, "TU CHOI")) {
+            dsDangKi.erase(index);
+            dsDangKi.luuFile("dangky.txt");
+            dsDangKi.clearSelected();
+            return SCREEN_AD_DUYET;
+        }
+        if (GuiButton({400, 700, 200, 30}, "Quay Lai")) {
+            dsDangKi.clearSelected();
+            return SCREEN_AD_DUYET;
+        }
+
+        return SCREEN_CHITIET;
+    }
 
 
 ScreenState DrawScreenChuTro()
@@ -1191,13 +1202,6 @@ ScreenState DrawScreenChiTietDaDuyet(QuanLy<DangKi>& dsDaDuyet, HinhAnh& anh) {
         GuiLabel({600, 100, 200, 25}, "Anh");
     }
 
-    if (GuiButton({400, 600, 200, 30}, "XOA"))
-{
-    dsDaDuyet.erase(index);
-    dsDaDuyet.luuFile("quanlyct.txt");
-    dsDaDuyet.clearSelected();
-    return SCREEN_AD_DUYET;
-}
     if (GuiButton({400, 700, 200, 30}, "Quay Lai")) {
         dsDaDuyet.clearSelected();
         return SCREEN_AD_DADUYET;
@@ -1359,6 +1363,15 @@ ScreenState DrawScreenTenant(){
 }
 ScreenState DrawScreenUserRegister(char* name, char* userName, char* userPass){
     static QuanLyDataUser userData;
+
+    static bool daKhoiTao = false;
+    if (!daKhoiTao) {
+        strcpy(name, "");
+        strcpy(userName, "");
+        strcpy(userPass, "");
+        daKhoiTao = true;
+    }
+    
     ClearBackground(RAYWHITE);
     GuiSetStyle(DEFAULT, TEXT_SIZE, 19);
 
@@ -1377,55 +1390,77 @@ ScreenState DrawScreenUserRegister(char* name, char* userName, char* userPass){
     static bool nameEditMode = false;
     static bool accountEditMode = false;
     static bool passEditMode = false;
-    int labelWidth1 = MeasureText("Mat Khau",15);
-    int labelWidth2 = MeasureText("So Tai Khoan",15);
 
-    DrawText("Ten :", nameBox.x - 40, nameBox.y + (nameBox.height - 15)/2, 15, BLACK);
-    DrawText("So Tai Khoan :",accountBox.x - labelWidth1 - 70,accountBox.y + (passwordBox.height -15)/2,15,BLACK);
-    DrawText("Mat khau :",passwordBox.x - labelWidth2 - 10,passwordBox.y + (passwordBox.height -15)/2,15,BLACK);
+    int labelX = 130;
+    DrawText("Ten:", labelX, nameBox.y + 12, 15, BLACK);
+    DrawText("So TK:", labelX, accountBox.y + 12, 15, BLACK);
+    DrawText("Mat khau:", labelX, passwordBox.y + 12, 15, BLACK);
 
     Vector2 mouse = GetMousePosition();
     bool mouseClicked = IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
     if (mouseClicked) {
-        if (CheckCollisionPointRec(mouse, nameBox)) { nameEditMode = true; accountEditMode = false; passEditMode = false; }
-        else if (CheckCollisionPointRec(mouse, accountBox)) { nameEditMode = false; accountEditMode = true; passEditMode = false; }
-        else if (CheckCollisionPointRec(mouse, passwordBox)) { nameEditMode = false; accountEditMode = false; passEditMode = true; }
-        else { nameEditMode = false; accountEditMode = false; passEditMode = false; }
+        if (CheckCollisionPointRec(mouse, nameBox)) { 
+            nameEditMode = true; accountEditMode = false; passEditMode = false; 
+        }
+        else if (CheckCollisionPointRec(mouse, accountBox)) { 
+            nameEditMode = false; accountEditMode = true; passEditMode = false; 
+        }
+        else if (CheckCollisionPointRec(mouse, passwordBox)) { 
+            nameEditMode = false; accountEditMode = false; passEditMode = true; 
+        }
+        else { 
+            nameEditMode = false; accountEditMode = false; passEditMode = false; 
+        }
     }
 
     GuiTextBox(nameBox, name, 64, nameEditMode);
     GuiTextBox(accountBox, userName, 64, accountEditMode);
     GuiTextBox(passwordBox, userPass, 64, passEditMode);
 
-    static string regMessage = "";
-    static Color colorMessage = RED;
+    static std::string message = "";
+    static Color messageColor = RED;
 
-    if (GuiButton(btnBack, "Quay laI")) {
-        regMessage.clear();
+    if (GuiButton(btnBack, "Quay lai")) {
+        message.clear();
         return SCREEN_USER_LOGIN;
     }
 
     if (GuiButton(registerButton, "Dang Ky")) {
-        string soTK(userName);
-        string mk(userPass);
-        string ten(name);
+        std::string ten(name);
+        std::string soTK(userName);
+        std::string mk(userPass);
 
-        if (soTK.empty() || mk.empty() || ten.empty()) {
-            regMessage = "Vui long nhap day du thong tin!";
-            colorMessage = RED;
-        } else {
-        
-            userData.dangKyUser(soTK, mk, ten);
+        auto trim = [](std::string& s) {
+            s.erase(0, s.find_first_not_of(" \t"));
+            if (!s.empty()) s.erase(s.find_last_not_of(" \t") + 1);
+        };
+        trim(ten); trim(soTK); trim(mk);
+
+        if (ten.empty() || soTK.empty() || mk.empty()) {
+            message = "Vui long nhap day du thong tin!";
+            messageColor = RED;
+        }
+        else if (userData.dangKyUser(soTK, mk, ten)) {
+ 
             userData.taoFolderUser(soTK);
             userData.taoFileMacDinhUser(soTK);
-
-            regMessage = "Dang ky thanh cong!";
-            colorMessage = GREEN;
+            
+            message = "Dang ky thanh cong tai khoan: " + soTK + "/Mat khau:" + mk;
+            messageColor = GREEN;
+            
+            strcpy(name, ""); strcpy(userName, ""); strcpy(userPass, "");
+        }
+        else {
+            message = "Loi: So tai khoan \"" + soTK + "\" da ton tai!";
+            messageColor = RED;
         }
     }
 
-    if (!regMessage.empty()) {
-        DrawText(regMessage.c_str(), 240, 500, 20, colorMessage);
+
+    if (!message.empty()) {
+        int msgWidth = MeasureText(message.c_str(), 20);
+        int msgX = (800 - msgWidth) / 2;
+        DrawText(message.c_str(), msgX, 450, 20, messageColor);
     }
 
     return SCREEN_DANGKI_USER;
@@ -1567,9 +1602,11 @@ ScreenState DrawScreenChiTietDangKiThue(QuanLy<DangKiThue>& dsDangKiThue, QuanLy
         dk.setStatusNT(DA_DUYET_NT);
 
         std::string filename = "data/" + nt.getSTK_ChuTro() + "/dondkthuept.txt";
-
+        dsAdDaDuyet.docFile(filename);
         dsAdDaDuyet.them(dk);
         dsAdDaDuyet.luuFile(filename);
+
+        dsDangKiThue.docFile("dangkithuephong.txt");
         dsDangKiThue.erase(index);
         dsDangKiThue.luuFile("dangkithuephong.txt");
         dsDangKiThue.clearSelected();
@@ -1709,40 +1746,49 @@ ScreenState DrawScreenChiTietDonChuTro(QuanLy<DangKiThue>& dsAdDaDuyet,QuanLy<Da
         dk.setStatusNT(DA_DUYET_NT);
     const NguoiThue nt = dk.getNguoiThue();
 
-    {
-        std::string path = "data/" + currentUserSoTK + "/quanlynt.txt";
-        std::filesystem::create_directories("data/" + currentUserSoTK);
+      {
+        QuanLy<DangKiThue> qlCT;
+        std::string pathCT = "data/" + currentUserSoTK + "/quanlynt.txt";
 
-        std::ofstream f(path, std::ios::app);
-        f << nt.getSTK_NguoiThue() << ","
-          << currentUserSoTK << ","
-          << nt.getTen() << ","
-          << nt.getSdt() << ","
-          << nt.getQueQuan() << ","
-          << nt.getNgayThue() << ","
-          << nt.getPhongSo() << ","
-          << DA_DUYET_NT << "\n";
-        f.close();
+        qlCT.docFile(pathCT);
+        qlCT.them(dk);
+        qlCT.luuFile(pathCT);
     }
 
     {
-        std::string path = "data/" + nt.getSTK_NguoiThue() + "/nguoithue.txt";
-        std::filesystem::create_directories("data/" + nt.getSTK_NguoiThue());
+        QuanLy<DangKiThue> qlNT;
+        std::string pathNT = "data/" + nt.getSTK_NguoiThue() + "/nguoithue.txt";
 
-        std::ofstream f(path, std::ios::app);
-        f << nt.getSTK_NguoiThue() << ","
-          << currentUserSoTK << ","
-          << nt.getTen() << ","
-          << nt.getSdt() << ","
-          << nt.getQueQuan() << ","
-          << nt.getNgayThue() << ","
-          << nt.getPhongSo() << ","
-          << DA_DUYET_NT << "\n";
-        f.close();
+        qlNT.docFile(pathNT);
+        qlNT.them(dk);
+        qlNT.luuFile(pathNT);
     }
-    dsAdDaDuyet.luuFile("quanlynt.txt");
-    dsAdDaDuyet.erase(index);
-    dsAdDaDuyet.luuFile("data/" + currentUserSoTK + "/dondkthuept.txt");
+
+    {
+        QuanLy<DangKiThue> qlAdmin;
+        qlAdmin.docFile("quanlynt.txt");
+        qlAdmin.them(dk);
+        qlAdmin.luuFile("quanlynt.txt");
+    }
+
+     {
+        QuanLy<DangKiThue> qlCho;
+        std::string pathCho = "data/" + currentUserSoTK + "/dondkthuept.txt";
+
+        qlCho.docFile(pathCho);
+
+        for (int i = 0; i < qlCho.size(); i++)
+        {
+            const NguoiThue& n = qlCho.lay(i).getNguoiThue();
+            if (n.getSTK_NguoiThue() == nt.getSTK_NguoiThue() &&
+                n.getPhongSo() == nt.getPhongSo())
+            {
+                qlCho.erase(i);
+                break;
+            }
+        }
+        qlCho.luuFile(pathCho);
+    }
 
         DrawText("DA DUYET THANH CONG!", 380, 550, 25, GREEN);
         return SCREEN_DS_CD;
@@ -1750,6 +1796,7 @@ ScreenState DrawScreenChiTietDonChuTro(QuanLy<DangKiThue>& dsAdDaDuyet,QuanLy<Da
 
     if (GuiButton({550, 450, 150, 60}, "TU CHOI")) {
         dk.setStatusNT(TU_CHOI_NT);
+        dsAdDaDuyet.docFile("data/" + currentUserSoTK + "/dondkthuept.txt");
         dsAdDaDuyet.erase(index);
         dsAdDaDuyet.luuFile("data/" + currentUserSoTK + "/dondkthuept.txt");
         return SCREEN_DS_CD;
@@ -1763,14 +1810,13 @@ ScreenState DrawScreenChiTietDonChuTro(QuanLy<DangKiThue>& dsAdDaDuyet,QuanLy<Da
     return SCREEN_CT_CHITIET_DON;
 }
 
+
+bool needReloadPhongTro = true;
 ScreenState DrawScreenQuanLyPhongTroCuaChuTro(QuanLy<DangKi>& dsChuTro)
 {       
-    static bool daDoc = false;
-
-    if (!daDoc)
-    {
+    
+        if(needReloadPhongTro){
         soLuongPhong = 0;
-        phongDangXem = 0;
         for (int i = 1; i <= 100; i++)
         {
             phongDaThue[i] = false;
@@ -1814,9 +1860,9 @@ ScreenState DrawScreenQuanLyPhongTroCuaChuTro(QuanLy<DangKi>& dsChuTro)
                 }
             }
         }
+        needReloadPhongTro = false;
 
-        daDoc = true;
-    }
+}
 
     ClearBackground(RAYWHITE);
     GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
@@ -1877,12 +1923,11 @@ ScreenState DrawScreenQuanLyPhongTroCuaChuTro(QuanLy<DangKi>& dsChuTro)
 
     if (GuiButton({300, 700, 150, 50}, "Lam moi"))
     {
-        daDoc = false;  
+        needReloadPhongTro = true;
     }
-
-    if (GuiButton({550, 700, 150, 50}, "Quay Lai"))
+    if (GuiButton({500, 700, 150, 50}, "Quay Lai"))
     {
-        daDoc = false;
+        
         return SCREEN_QUANLY_DAYTRO;
     }
 
@@ -1926,37 +1971,6 @@ ScreenState DrawScreenChiTietNguoiThue()
     GuiLabel({220, 400, 180, 30}, "Trang thai:");
     GuiLabel({420, 400, 400, 30}, "Dang thue");
 
-    if (GuiButton({300, 500, 200, 60}, "XOA"))
-    {
-        dsNguoiThuePhong[phongDangXem] = NguoiThue();
-        phongDaThue[phongDangXem] = false;
-
-
-        QuanLy<DangKiThue> dsTemp;
-        std::string pathCT = "data/" + currentUserSoTK + "/quanlynt.txt";
-        if (FileExists(pathCT.c_str()))
-        {
-            dsTemp.docFile(pathCT);
-        }
-        for (int i = 0; i < dsTemp.size(); i++)
-        {
-            if (dsTemp.lay(i).getNguoiThue().getPhongSo() == phongDangXem)
-            {
-                dsTemp.erase(i);
-                break;
-            }
-        }
-        dsTemp.luuFile(pathCT);
-        std::string pathNT = "data/" + nt.getSTK_NguoiThue() + "/nguoithue.txt";
-        if (FileExists(pathNT.c_str()))
-        {
-            std::remove(pathNT.c_str());
-        }
-
-        phongDangXem = 0;
-        return SCREEN_DS_PHONGTRO;  
-    }
-
     if (GuiButton({550, 500, 200, 60}, "QUAY LAI"))
     {
         phongDangXem = 0;
@@ -1965,16 +1979,18 @@ ScreenState DrawScreenChiTietNguoiThue()
     return SCREEN_CT_CHITIET_NGUOITHUE;
 }
 
-ScreenState DrawScreenPhongTroCuaToi()
+   ScreenState DrawScreenPhongTroCuaToi()
 {
     static bool daDoc = false;
     static NguoiThue ntHienTai;           
-    static std::string tenChuTro = "";
+    static std::string tenChuTro = "Khong tim thay chu tro";
+    static bool dangThueHopLe = false;  
 
     if (!daDoc)
     {
+        ntHienTai = NguoiThue();
         tenChuTro = "Khong tim thay chu tro";
-        ntHienTai = NguoiThue(); 
+        dangThueHopLe = false;
 
         std::string path = "data/" + currentUserSoTK + "/nguoithue.txt";
 
@@ -1982,48 +1998,79 @@ ScreenState DrawScreenPhongTroCuaToi()
         {
             std::ifstream f(path);
             std::string line;
+
             if (std::getline(f, line) && !line.empty())
             {
                 std::stringstream ss(line);
-                std::string stkNT, stkCT, ten, sdt, que, ngay, phong, status;
+                std::string stkNT, stkCT, ten, sdt, que, ngay, phong;
 
-                std::getline(ss, stkNT,   ',');
-                std::getline(ss, stkCT,   ',');
-                std::getline(ss, ten,     ',');
-                std::getline(ss, sdt,     ',');
-                std::getline(ss, que,     ',');
-                std::getline(ss, ngay,    ',');
-                std::getline(ss, phong,   ',');
-                std::getline(ss, status,  ',');
-                
+                std::getline(ss, stkNT, ',');
+                std::getline(ss, stkCT, ',');
+                std::getline(ss, ten,   ',');
+                std::getline(ss, sdt,   ',');
+                std::getline(ss, que,   ',');
+                std::getline(ss, ngay,  ',');
+                std::getline(ss, phong, ',');
+
                 int PhongSo = 0;
-               if (!phong.empty())
-               {PhongSo = std::stoi(phong);}
-                ntHienTai = NguoiThue(stkNT, stkCT, ten, que, sdt, ngay, PhongSo);
-                QuanLy<DangKi> dsCT;
-                dsCT.docFile("quanlyct.txt");
-                for (int i = 0; i < dsCT.size(); i++)
+                if (!phong.empty())
                 {
-                    const ChuTro& ct = dsCT.lay(i).getChuTro();
-                    if (ct.getSTK() == stkCT)
-                    {
-                        tenChuTro = ct.getTen();
-                        break;
+                    try {
+                        PhongSo = std::stoi(phong);
+                    } catch (...) {
+                        PhongSo = 0;
                     }
+                }
+                NguoiThue tempNT(stkNT, stkCT, ten, que, sdt, ngay, PhongSo);
+                bool chuTroConTonTai = false;
+
+                if (FileExists("quanlyct.txt"))
+                {
+                    QuanLy<DangKi> dsCT;
+                  dsCT.docFile("quanlyct.txt");
+                    
+                        for (int i = 0; i < dsCT.size(); i++)
+                        {
+                            const ChuTro& ct = dsCT.lay(i).getChuTro();
+                            if (ct.getSTK() == stkCT)
+                            {
+                                chuTroConTonTai = true;
+                                tenChuTro = ct.getTen();
+                                break;
+                            }
+                        }
+                    
+                }
+
+                if (chuTroConTonTai)
+                {
+                    ntHienTai = tempNT;
+                    dangThueHopLe = true;
+                }
+                else
+                {
+                    ntHienTai = NguoiThue(); 
+                    dangThueHopLe = false;
+                    tenChuTro = "Khong tim thay chu tro (hop dong da het hieu luc)";
                 }
             }
             f.close();
         }
+
         daDoc = true;
     }
 
     ClearBackground(RAYWHITE);
     GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
-    DrawText("PHONG TRO CUA TOI", 380, 40, 32, DARKBLUE);
 
-    if (ntHienTai.getTen().empty())
+    const char* title = "PHONG TRO CUA TOI";
+    int titleWidth = MeasureText(title, 32);
+    DrawText(title, GetScreenWidth()/2 - titleWidth/2, 40, 32, DARKBLUE);
+    if (!dangThueHopLe || ntHienTai.getTen().empty())
     {
-        DrawText("Ban chua thue phong nao", 360, 300, 28, RED);
+        const char* msg = "Ban chua thue phong nao";
+        int msgWidth = MeasureText(msg, 28);
+        DrawText(msg, GetScreenWidth()/2 - msgWidth/2, 300, 28, RED);
     }
     else
     {
@@ -2040,19 +2087,23 @@ ScreenState DrawScreenPhongTroCuaToi()
         GuiLabel({420, 290, 400, 30}, ntHienTai.getNgayThue().c_str());
 
         GuiLabel({200, 340, 200, 30}, "Phong dang thue:");
-        GuiLabel({420, 340, 400, 30}, std::to_string(ntHienTai.getPhongSo()).c_str());
+        GuiLabel({420, 340, 400, 30}, ("Phong " + std::to_string(ntHienTai.getPhongSo())).c_str());
 
         GuiLabel({200, 400, 200, 30}, "Chu tro:");
         GuiLabel({420, 400, 400, 30}, tenChuTro.c_str());
 
         DrawRectangleLines(180, 120, 640, 340, Fade(DARKGRAY, 0.5f));
     }
-
     if (GuiButton({350, 600, 150, 50}, "Lam moi"))
+    {
         daDoc = false;
+    }
+
 
     if (GuiButton({520, 600, 150, 50}, "Quay Lai"))
+    {
         return SCREEN_TENANT;
+    }
 
     return SCREEN_QUANLY_PHONGTRO;
 }

@@ -33,16 +33,41 @@ public:
         ofstream(userFolder + "quanlypt.txt").close();
         ofstream(userFolder + "dondkthuept.txt").close();
     }
-
-    void dangKyUser(const string& soTK, const string& matKhau, const string& ten) {
-        ofstream fUser("user.txt", ios::app);
-        if (fUser.is_open()) {
-            fUser << soTK << " " << matKhau << " " << ten << "\n";
-            fUser.close();
-        }
-        taoFolderUser(soTK);
-        taoFileMacDinhUser(soTK);
+    bool kiemTraSoTKTonTai(const string& soTK) {
+    ifstream fUser("user.txt");
+    if (!fUser.is_open()) {
+        return false;
     }
+
+    string line;
+    while (getline(fUser, line)) {
+        stringstream ss(line);
+        string tkTrongFile;
+        ss >> tkTrongFile;
+
+        if (tkTrongFile == soTK) {
+            fUser.close();
+            return true;
+        }
+    }
+
+    fUser.close();
+    return false;
+}
+
+   bool dangKyUser(const string& soTK, const string& matKhau, const string& ten) {
+    if (kiemTraSoTKTonTai(soTK)) {
+        return false; 
+    }
+    ofstream fUser("user.txt", ios::app);
+    if (!fUser.is_open()) {
+        return false;
+    }
+
+    fUser << soTK << " " << matKhau << " " << ten << "\n";
+    fUser.close();
+    return true;
+}
     QuanLy<DangKi> docFileChuTro(const std::string& soTK) {
         QuanLy<DangKi> temp;
         string filename = Folder + soTK + "/chutro.txt";
